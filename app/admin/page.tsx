@@ -19,9 +19,23 @@ export default function AdminPage() {
   const [search, setSearch] = useState("")
 
   useEffect(() => {
-    fetch("/api/admin/registrations")
-      .then((res) => res.json())
-      .then((res) => setData(res))
+    // Fetch data immediately
+    const fetchData = async () => {
+      try {
+        const res = await fetch("/api/admin/registrations")
+        const result = await res.json()
+        setData(result)
+      } catch (error) {
+        console.error("Failed to fetch registrations:", error)
+      }
+    }
+
+    fetchData()
+
+    // Poll for new registrations every 5 seconds
+    const interval = setInterval(fetchData, 5000)
+
+    return () => clearInterval(interval)
   }, [])
 
   const events = Array.from(new Set(data.map((d) => d.eventName)))
