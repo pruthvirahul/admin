@@ -21,8 +21,7 @@ const events = [
     { name: "Line Follower", price: "₹299" },
     { name: "RC Racing", price: "₹299" },
   ]},
-  { id: 9, name: "Autonomous Drone Challenge", price: "₹499" },
-  { id: 8, name: "Workshops", subEvents: [
+  { id: 8, name: "Technical Workshops", subEvents: [
     { name: "Solidworks workshop", price: "₹349" },
     { name: "Ansys workshop", price: "₹349" },
     { name: "Refrigiration and Airconditioning workshop", price: "₹199" },
@@ -31,6 +30,7 @@ const events = [
     { name: "IC Engines", price: "₹199" },
     { name: "3D Printing", price: "₹299" },
   ]},
+  { id: 10, name: "CFD - Computational Fluid Dynamics", price: "₹299" },
 ]
 
 function RegisterPageContent() {

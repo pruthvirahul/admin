@@ -102,10 +102,15 @@ const events = [
   {
     id: 9,
     name: "Technical Workshops",
-    image: "images/sponsors/workshop.jpg",
+    image: "images/sponsors/workshop.jpeg",
     description:
       "Hands-on workshops in SolidWorks, ANSYS, EVs, IC Engines, 3D Printing and more.",
     price: "Will be updated soon",
+    guidelines: [
+      "Carry your own laptop with required software pre-installed.",
+      "Be present 30 minutes before the scheduled workshop slot.",
+      "Follow instructor directions and lab safety during practical sessions.",
+    ],
     subEvents: [
       { name: "Solidworks workshop", price: "₹349" },
       { name: "Ansys workshop", price: "₹349" },
@@ -114,6 +119,20 @@ const events = [
       { name: "EV workshop", price: "₹199" },
       { name: "IC Engines", price: "₹199" },
        { name: "3D Printing", price: "₹299" },
+    ],
+  },
+  {
+    id: 10,
+    name: "CFD - Computational Fluid Dynamics",
+    image: "images/sponsors/technical.jpeg",
+    description:
+      "Simulation-focused event to analyze fluid flow and thermal performance using CFD tools.",
+    price: "₹299",
+    guidelines: [
+      "Individual or maximum 2 participants per team.",
+      "Bring a laptop with ANSYS Fluent/OpenFOAM or an equivalent CFD tool.",
+      "Submit mesh details, boundary conditions, and final contour plots.",
+      "Judges' decision will be final for evaluation and ranking.",
     ],
   },
 ]
@@ -201,6 +220,17 @@ export function Events() {
                           <span>{sub.name}</span>
                           <span className="font-semibold text-cyan-600">{sub.price}</span>
                         </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {activeEvent.guidelines && (
+                  <div className="mb-6">
+                    <p className="font-semibold mb-3">Guidelines:</p>
+                    <ul className="list-disc pl-5 space-y-2 text-sm text-muted-foreground">
+                      {activeEvent.guidelines.map((guide: string) => (
+                        <li key={guide}>{guide}</li>
                       ))}
                     </ul>
                   </div>

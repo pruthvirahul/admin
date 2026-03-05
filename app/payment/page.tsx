@@ -14,8 +14,8 @@ const events = [
   { id: 5, name: "3D Printing Hackathon", price: "₹799" },
   { id: 6, name: "Technical Events" },
   { id: 7, name: "Robotic Events" },
-  { id: 9, name: "Autonomous Drone Challenge", price: "₹499" },
-  { id: 8, name: "Workshops" },
+  { id: 8, name: "Technical Workshops" },
+  { id: 10, name: "CFD - Computational Fluid Dynamics", price: "₹299" },
 ]
 
 function PaymentPageContent() {
