@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { Suspense, useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
@@ -18,7 +18,7 @@ const events = [
   { id: 8, name: "Workshops" },
 ]
 
-export default function PaymentPage() {
+function PaymentPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -58,9 +58,6 @@ export default function PaymentPage() {
     const upiId = "mecharena@sbi"
     const payeeName = "Mecharena 2026"
     const fullEvent = subEvent ? `${eventName} - ${subEvent}` : eventName
-    
-    // Unique reference with timestamp
-    const reference = `${name.replace(/\s+/g, "")}-${fullEvent.replace(/\s+/g, "")}-${Date.now()}`
     
     // Generate UPI link
     const link = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR&tn=${encodeURIComponent(`${name} - ${fullEvent}`)}`
@@ -312,5 +309,27 @@ export default function PaymentPage() {
 
       <Footer />
     </main>
+  )
+}
+
+function PaymentPageFallback() {
+  return (
+    <main className="min-h-screen bg-background flex flex-col">
+      <Navbar />
+      <div className="flex-1 container mx-auto px-4 py-12">
+        <div className="max-w-4xl mx-auto text-center text-muted-foreground">
+          Loading payment page...
+        </div>
+      </div>
+      <Footer />
+    </main>
+  )
+}
+
+export default function PaymentPage() {
+  return (
+    <Suspense fallback={<PaymentPageFallback />}>
+      <PaymentPageContent />
+    </Suspense>
   )
 }

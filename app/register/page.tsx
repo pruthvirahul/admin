@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react"
+import { Suspense, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
@@ -33,7 +33,7 @@ const events = [
   ]},
 ]
 
-export default function RegisterPage() {
+function RegisterPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   
@@ -223,5 +223,27 @@ export default function RegisterPage() {
 
       <Footer />
     </main>
+  )
+}
+
+function RegisterPageFallback() {
+  return (
+    <main className="min-h-screen bg-background flex flex-col">
+      <Navbar />
+      <div className="flex-1 container mx-auto px-4 py-12">
+        <div className="max-w-2xl mx-auto text-center text-muted-foreground">
+          Loading registration form...
+        </div>
+      </div>
+      <Footer />
+    </main>
+  )
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<RegisterPageFallback />}>
+      <RegisterPageContent />
+    </Suspense>
   )
 }
