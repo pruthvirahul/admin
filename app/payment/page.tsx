@@ -12,9 +12,38 @@ const events = [
   { id: 3, name: "Open Loop Events", price: "Will be updated soon" },
   { id: 4, name: "Navadhara Praudyogika", price: "₹499" },
   { id: 5, name: "3D Printing Hackathon", price: "₹799" },
-  { id: 6, name: "Technical Events" },
-  { id: 7, name: "Robotic Events" },
-  { id: 8, name: "Technical Workshops" },
+  { id: 6, name: "Technical Events", subEvents: [
+    { name: "Technical Paper Presentation", price: "₹150" },
+    { name: "Structure Building", price: "₹150" },
+    { name: "Solidworks", price: "₹75" },
+    { name: "Ansys", price: "₹75" },
+  ]},
+  { id: 7, name: "Robotic Events", subEvents: [
+    { name: "Robo Maze + RC Racing", price: "₹499" },
+    { name: "Line Follower", price: "₹299" },
+    { name: "RC Racing", price: "₹299" },
+    { name: "Robo maze", price: "₹299" },
+    { name: "Robo Sumo", price: "₹299" },
+  ]},
+  { id: 8, name: "Workshops", subEvents: [
+    { name: "Ansys workshop", price: "₹349" },
+    { name: "3D Printing workshop", price: "₹299" },
+    { name: "Solid works workshop", price: "₹349" },
+    { name: "Refrigeration and Air Conditioning workshop", price: "₹199" },
+    { name: "EV workshop", price: "₹199" },
+    { name: "IC Engines workshop", price: "₹199" },
+    { name: "Welding workshop", price: "₹199" },
+    { name: "Robotics workshop", price: "₹199" },
+  ]},
+  { id: 9, name: "Technical Workshops", subEvents: [
+    { name: "Solidworks workshop", price: "₹349" },
+    { name: "Ansys workshop", price: "₹349" },
+    { name: "Refrigeration and Air Conditioning workshop", price: "₹199" },
+    { name: "Welding workshop", price: "₹199" },
+    { name: "EV workshop", price: "₹199" },
+    { name: "IC Engines", price: "₹199" },
+    { name: "3D Printing", price: "₹299" },
+  ]},
   { id: 10, name: "CFD - Computational Fluid Dynamics", price: "₹299" },
 ]
 
@@ -38,9 +67,14 @@ function PaymentPageContent() {
   const selectedEvent = events.find((e) => e.id === parseInt(eventId))
   const eventName = selectedEvent?.name || "Unknown Event"
 
-  // Extract amount from price
+  // Extract amount from price - check subEvent first, then main event
   let amount = "0"
-  if (selectedEvent?.price && selectedEvent.price.includes("₹")) {
+  if (subEvent && selectedEvent?.subEvents) {
+    const foundSubEvent = selectedEvent.subEvents.find((se: any) => se.name === subEvent)
+    if (foundSubEvent?.price && foundSubEvent.price.includes("₹")) {
+      amount = foundSubEvent.price.replace("₹", "").trim()
+    }
+  } else if (selectedEvent?.price && selectedEvent.price.includes("₹")) {
     amount = selectedEvent.price.replace("₹", "").trim()
   }
 
@@ -186,7 +220,7 @@ function PaymentPageContent() {
                   <div className="pt-2 bg-cyan-600/10 border border-cyan-600/30 rounded-lg p-4">
                     <p className="text-sm text-muted-foreground">Payment Amount</p>
                     <p className="text-3xl font-bold text-cyan-600">
-                      {selectedEvent?.price || "Price not available"}
+                      {amount && amount !== "0" ? `₹${amount}` : "Price not available"}
                     </p>
                   </div>
                 </div>
