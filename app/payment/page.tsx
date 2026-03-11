@@ -1,6 +1,6 @@
 "use client"
 
-import { Suspense, useState, useEffect } from "react"
+import { Suspense, useState, useEffect, useMemo } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
@@ -64,19 +64,24 @@ function PaymentPageContent() {
   const eventId = searchParams.get("eventId") || ""
   const subEvent = searchParams.get("subEvent") || ""
 
-  const selectedEvent = events.find((e) => e.id === parseInt(eventId))
+  const selectedEvent = useMemo(
+    () => events.find((e) => e.id === parseInt(eventId)),
+    [eventId]
+  )
   const eventName = selectedEvent?.name || "Unknown Event"
 
   // Extract amount from price - check subEvent first, then main event
-  let amount = "0"
-  if (subEvent && selectedEvent?.subEvents) {
-    const foundSubEvent = selectedEvent.subEvents.find((se: any) => se.name === subEvent)
-    if (foundSubEvent?.price && foundSubEvent.price.includes("₹")) {
-      amount = foundSubEvent.price.replace("₹", "").trim()
+  const amount = useMemo(() => {
+    if (subEvent && selectedEvent?.subEvents) {
+      const foundSubEvent = selectedEvent.subEvents.find((se: any) => se.name === subEvent)
+      if (foundSubEvent?.price && foundSubEvent.price.includes("₹")) {
+        return foundSubEvent.price.replace("₹", "").trim()
+      }
+    } else if (selectedEvent?.price && selectedEvent.price.includes("₹")) {
+      return selectedEvent.price.replace("₹", "").trim()
     }
-  } else if (selectedEvent?.price && selectedEvent.price.includes("₹")) {
-    amount = selectedEvent.price.replace("₹", "").trim()
-  }
+    return "0"
+  }, [selectedEvent, subEvent])
 
   // Generate UPI Link dynamically
   useEffect(() => {

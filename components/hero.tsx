@@ -1,8 +1,15 @@
 "use client"
 
 import Link from "next/link"
+import dynamic from "next/dynamic"
 import { motion } from "framer-motion"
-import { SpaceScene } from "./SpaceScene"
+
+// Lazy-load the Three.js canvas so it does not block the initial page render
+// and is excluded from the server-side bundle (ssr: false required for WebGL).
+const SpaceScene = dynamic(() => import("./SpaceScene").then((m) => ({ default: m.SpaceScene })), {
+  ssr: false,
+  loading: () => <div className="absolute inset-0 bg-black" />,
+})
 
 export function Hero() {
   return (

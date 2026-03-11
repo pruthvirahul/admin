@@ -14,6 +14,7 @@ if (/@cluster\.mongodb\.net(?=\/|\?|$)/.test(uri)) {
 
 declare global {
   var _mongoClientPromise: Promise<MongoClient> | undefined
+  var _indexesPromise: Promise<void> | undefined
 }
 
 let clientPromise: Promise<MongoClient>
@@ -27,7 +28,26 @@ clientPromise = global._mongoClientPromise
 
 export async function getDb(dbName = "oucefest") {
   const client = await clientPromise
-  return client.db(dbName)
+  const db = client.db(dbName)
+  if (!global._indexesPromise) {
+    global._indexesPromise = ensureIndexes(db)
+  }
+  await global._indexesPromise
+  return db
+}
+
+async function ensureIndexes(db: ReturnType<MongoClient["db"]>) {
+  const col = db.collection("registrations")
+  await Promise.all([
+    // Unique index on txnId prevents duplicate transactions and speeds up duplicate checks
+    col.createIndex({ txnId: 1 }, { unique: true }),
+    // Index on phone speeds up pass lookups
+    col.createIndex({ phone: 1 }),
+    // Compound index for duplicate-registration checks (phone + eventName + subEvent)
+    col.createIndex({ phone: 1, eventName: 1, subEvent: 1 }),
+    // Index on createdAt supports efficient sort in admin and pass queries
+    col.createIndex({ createdAt: -1 }),
+  ])
 }
 
 export default clientPromise

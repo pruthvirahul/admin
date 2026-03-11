@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 
 interface Registration {
   _id: string
@@ -13,18 +13,29 @@ interface Registration {
   verified: boolean
 }
 
+/** Debounce a value by `delay` ms to avoid expensive re-filtering on every keystroke. */
+function useDebounce<T>(value: T, delay: number): T {
+  const [debounced, setDebounced] = useState(value)
+  useEffect(() => {
+    const timer = setTimeout(() => setDebounced(value), delay)
+    return () => clearTimeout(timer)
+  }, [value, delay])
+  return debounced
+}
+
 export default function AdminPage() {
   const [data, setData] = useState<Registration[]>([])
   const [selectedEvent, setSelectedEvent] = useState<string | null>(null)
   const [search, setSearch] = useState("")
+  const debouncedSearch = useDebounce(search, 300)
 
+  // Keep a stable reference to fetchData so setInterval doesn't capture a stale closure
   useEffect(() => {
-    // Fetch data immediately
     const fetchData = async () => {
       try {
         const res = await fetch("/api/admin/registrations")
         const result = await res.json()
-        setData(result)
+        setData(result.data ?? result)
       } catch (error) {
         console.error("Failed to fetch registrations:", error)
       }
@@ -32,13 +43,17 @@ export default function AdminPage() {
 
     fetchData()
 
-    // Poll for new registrations every 5 seconds
-    const interval = setInterval(fetchData, 5000)
+    // Poll for new registrations every 30 seconds (was 5 s → 720 req/hr)
+    const interval = setInterval(fetchData, 30_000)
 
     return () => clearInterval(interval)
   }, [])
 
-  const events = Array.from(new Set(data.map((d) => d.eventName)))
+  // Memoize the unique event list so it is only recomputed when `data` changes
+  const events = useMemo(
+    () => Array.from(new Set(data.map((d) => d.eventName))),
+    [data]
+  )
   const totalRegistrations = data.length
 
   const toggleVerify = async (id: string, current: boolean) => {
@@ -54,6 +69,29 @@ export default function AdminPage() {
       )
     )
   }
+
+  // Memoize rows for the selected event so filtering only runs when inputs change
+  const selectedEventData = useMemo(
+    () => (selectedEvent ? data.filter((d) => d.eventName === selectedEvent) : []),
+    [data, selectedEvent]
+  )
+
+  const filteredRows = useMemo(() => {
+    const q = debouncedSearch.toLowerCase()
+    if (!q) return selectedEventData
+    return selectedEventData.filter(
+      (d) =>
+        d.name.toLowerCase().includes(q) ||
+        d.txnId.toLowerCase().includes(q) ||
+        d.phone.includes(debouncedSearch)
+    )
+  }, [selectedEventData, debouncedSearch])
+
+  // Memoize sub-category grouping so it only runs when filtered rows change
+  const subCategories = useMemo(
+    () => Array.from(new Set(filteredRows.map((d) => d.subEvent || "General"))),
+    [filteredRows]
+  )
 
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100 p-4 md:p-8">
@@ -105,23 +143,10 @@ export default function AdminPage() {
           />
 
           {/* Group By SubEvent */}
-          {Array.from(
-            new Set(
-              data
-                .filter((d) => d.eventName === selectedEvent)
-                .map((d) => d.subEvent || "General")
-            )
-          ).map((subCategory) => {
+          {subCategories.map((subCategory) => {
 
-            const groupedData = data.filter(
-              (d) =>
-                d.eventName === selectedEvent &&
-                (d.subEvent || "General") === subCategory &&
-                (
-                  d.name.toLowerCase().includes(search.toLowerCase()) ||
-                  d.txnId.toLowerCase().includes(search.toLowerCase()) ||
-                  d.phone.includes(search)
-                )
+            const groupedData = filteredRows.filter(
+              (d) => (d.subEvent || "General") === subCategory
             )
 
             if (groupedData.length === 0) return null
